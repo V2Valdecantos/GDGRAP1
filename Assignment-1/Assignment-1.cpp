@@ -1,9 +1,11 @@
 #define _USE_MATH_DEFINES
 
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>]
+#include <GLFW/glfw3.h>
 #include <math.h>
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
 
 int main(void)
 {
@@ -12,7 +14,7 @@ int main(void)
     /* Initialize the library */
     if (!glfwInit())
         return -1;
-
+        
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 640, "Vito Valdecantos", NULL, NULL);
     if (!window)
@@ -24,6 +26,27 @@ int main(void)
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
     gladLoadGL();
+
+    std::string path = "3D/bunny.obj";
+    std::vector<tinyobj::shape_t> shape;
+    std::vector<tinyobj::material_t> material;
+    std::string warning, error;
+
+    tinyobj::attrib_t attributes;
+
+    bool success = tinyobj::LoadObj(
+        &attributes,
+        &shape,
+        &material,
+        &warning,
+        &error,
+        path.c_str()
+    );
+    
+    std::vector<GLuint> mesh_indices;
+    for (int i = 0; i < shape[0].mesh.indices.size(); i++) {
+        mesh_indices.push_back(shape[0].mesh.indices[i].vertex_index);
+    }
 
     GLfloat vertices[]{
         0.f, 0.5f, 0.f,
@@ -42,13 +65,13 @@ int main(void)
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * attributes.vertices.size(), &attributes.vertices[0], GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * mesh_indices.size(), mesh_indices.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -62,7 +85,7 @@ int main(void)
 
         glBindVertexArray(VAO);
         //glDrawArrays(GL_TRIANGLES, 0, 3);
-        glDrawElements(GL_TRIANGLES, sizeof(indices), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, mesh_indices.size(), GL_UNSIGNED_INT, 0);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
