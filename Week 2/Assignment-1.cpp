@@ -1,5 +1,9 @@
 #define _USE_MATH_DEFINES
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <math.h>
@@ -12,23 +16,66 @@
 
 float x_mod = 0;
 float y_mod = 0;
+float rotate_mod = 0;
+bool spaceheld, aPressed, dPressed, wPressed, sPressed;
 
 void Key_Callback(GLFWwindow* window, int key, int scancode, int action, int mod) {
     if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-        x_mod += 0.1f;
+        dPressed = true;
+    }
+
+    if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
+        dPressed = false;
     }
 
     if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-        x_mod -= 0.1f;
+        aPressed = true;
+    }
+
+    if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
+        aPressed = false;
     }
 
     if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-        y_mod += 0.1f;
+        wPressed = true;
+    }
+
+    if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
+        wPressed = false;
     }
 
     if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-        y_mod -= 0.1f;
+        sPressed = true;
+    }   
+
+    if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
+        sPressed = false;
     }
+
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        spaceheld = true;
+    }
+
+    if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
+        spaceheld = false;
+    }
+
+    if (spaceheld)
+        rotate_mod += 60.0f;
+
+    if (dPressed)
+        x_mod += 0.1f;
+
+    if (aPressed)
+        x_mod -= 0.1f;
+    
+    if (wPressed)
+        y_mod += 0.1f;
+
+    if (sPressed)
+        y_mod -= 0.1f;
+
+
 }
 
 int main(void)
@@ -129,17 +176,35 @@ int main(void)
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+    glm::mat4 identity_matrix4 = glm::mat4(1.0f);
+
+    //glm::mat4 translation = glm::translate(identity_matrix4, glm::vec3(x, y, z);
+    //glm::mat4 scale = glm::scale(identity_matrix4, glm::vec3(x, y, z));
+    //glm::mat4 rotate = glm::rotate(identity_matrix4, glm::radians(theta), glm::vec3(x, y, z); //last parameter = axis vector (normalized)
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        unsigned int xLoc = glGetUniformLocation(shaderProgram, "x");
+        
+
+        /*unsigned int xLoc = glGetUniformLocation(shaderProgram, "x");
         glUniform1f(xLoc, x_mod);
 
         unsigned int yLoc = glGetUniformLocation(shaderProgram, "y");
-        glUniform1f(yLoc, y_mod);
+        glUniform1f(yLoc, y_mod);*/
+
+        glm::mat4 transformation_matrix = glm::translate(identity_matrix4, glm::vec3(x_mod, y_mod, 0));
+
+        transformation_matrix = glm::scale(transformation_matrix, glm::vec3(2, 2, 2));
+
+        transformation_matrix = glm::rotate(transformation_matrix, glm::radians(rotate_mod), glm::normalize(glm::vec3(0, 1,0)));
+
+        unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
+
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
 
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
