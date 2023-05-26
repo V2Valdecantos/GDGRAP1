@@ -1,0 +1,5 @@
+﻿  Assignment-1.cpp
+C:\Users\valde\Desktop\Assignment-1\Assignment-1.cpp(59,72): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\valde\Desktop\Assignment-1\Assignment-1.cpp(59,29): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  Assignment-1.vcxproj -> C:\Users\valde\Desktop\Assignment-1\x64\Debug\Assignment-1.exe
